@@ -10,15 +10,22 @@ ma_longa = st.slider("Média Móvel Longa", 30, 200, 50)
 
 if ticker:
     dados = yf.download(ticker, start="2022-01-01")
-    dados['MA_Curta'] = dados['Close'].rolling(ma_curta).mean()
-    dados['MA_Longa'] = dados['Close'].rolling(ma_longa).mean()
 
-    st.line_chart(dados[['Close', 'MA_Curta', 'MA_Longa']])
+    if not dados.empty:
+        dados['MA_Curta'] = dados['Close'].rolling(ma_curta).mean()
+        dados['MA_Longa'] = dados['Close'].rolling(ma_longa).mean()
 
-    ultimo_sinal = "SEGURAR"
-    if dados['MA_Curta'].iloc[-1] > dados['MA_Longa'].iloc[-1]:
-        ultimo_sinal = "COMPRA"
-    elif dados['MA_Curta'].iloc[-1] < dados['MA_Longa'].iloc[-1]:
-        ultimo_sinal = "VENDA"
+        if 'MA_Curta' in dados and 'MA_Longa' in dados:
+            st.line_chart(dados[['Close', 'MA_Curta', 'MA_Longa']])
 
-    st.markdown(f"### Sinal Atual: **{ultimo_sinal}**")
+            ultimo_sinal = "SEGURAR"
+            if dados['MA_Curta'].iloc[-1] > dados['MA_Longa'].iloc[-1]:
+                ultimo_sinal = "COMPRA"
+            elif dados['MA_Curta'].iloc[-1] < dados['MA_Longa'].iloc[-1]:
+                ultimo_sinal = "VENDA"
+
+            st.markdown(f"### Sinal Atual: **{ultimo_sinal}**")
+        else:
+            st.warning("Não há dados suficientes para calcular as médias móveis.")
+    else:
+        st.error("Ticker inválido ou sem dados disponíveis.")
